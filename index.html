@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d1b2e">
+<meta property="og:title" content="CBT-I Sleep Guide">
+<meta property="og:description" content="The evidence-based, drug-free guide to beating insomnia.">
+<title>CBT-I Sleep Guide</title>
+<style>
+
+/* ============================================================
+   DESIGN TOKENS
+   To restyle the app, change values here only.
+   ============================================================ */
+:root {
+  /* Brand colours */
+  --navy:       #0d1b2e;
+  --navy-mid:   #1a2f4a;
+  --blue:       #2d6be4;
+  --teal:       #1b8a78;
+  --amber:      #c06b0e;
+  --red:        #c0281e;
+  --success:    #1b7a50;
+
+  /* Surface & text */
+  --white:      #ffffff;
+  --surface:    #f5f7fb;
+  --rule:       #e0e5ef;
+  --text:       #1a2333;
+  --muted:      #7a889e;
+
+  /* Semantic light backgrounds */
+  --teal-lt:    #e0f5f2;
+  --amber-lt:   #fef3e2;
+  --red-lt:     #fee8e6;
+  --success-lt: #e0f5eb;
+
+  /* Layout */
+  --radius:     12px;
+  --nav-h:      60px;
+  --top-h:      54px;
+  --safe-t:     env(safe-area-inset-top, 0px);
+  --safe-b:     env(safe-area-inset-bottom, 0px);
+}
+
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  /* Fixed layout prevents iOS bounce scroll */
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+
+/* ============================================================
+   APP SHELL  (top bar → scrolling content → bottom nav)
+   ============================================================ */
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-t);
+}
+
+/* Top bar */
+#topbar {
+  height: var(--top-h);
+  padding: 0 18px;
+  background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+#topbar .logo { font-size: 20px; }
+#topbar h1   { font-size: 16px; font-weight: 700; color: #fff; flex: 1; letter-spacing: -.01em; }
+#save-badge  {
+  font-size: 11px; font-weight: 700;
+  background: var(--success); color: #fff;
+  padding: 4px 10px; border-radius: 20px;
+  opacity: 0; transition: opacity .3s; flex-shrink: 0;
+}
+#save-badge.show { opacity: 1; }
+
+/* Scrolling content */
+#pages {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+#pages::-webkit-scrollbar { width: 3px; }
+#pages::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
+
+/* Bottom nav */
+#nav {
+  background: var(--navy);
+  display: flex;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255,255,255,.09);
+  padding-bottom: var(--safe-b);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px 8px;
+  min-height: var(--nav-h);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,.38);
+  touch-action: manipulation;
+  transition: color .15s;
+  -webkit-appearance: none;
+}
+.nav-btn .nb-icon  { font-size: 24px; line-height: 1; }
+.nav-btn .nb-label { font-size: 10px; font-weight: 600; letter-spacing: .02em; }
+.nav-btn.active    { color: #fff; }
+.nav-btn:active    { opacity: .7; }
+
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+.section        { display: none; padding: 18px 16px 48px; max-width: 540px; margin: 0 auto; }
+.section.active { display: block; }
+
+/* Page headings */
+.page-title { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -.03em; margin-bottom: 4px; }
+.page-sub   { font-size: 13px; color: rgba(255,255,255,.48); margin-bottom: 22px; line-height: 1.4; }
+
+/* Section labels (all-caps eyebrow) */
+.sec-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: rgba(255,255,255,.4);
+  margin: 26px 0 10px;
+}
+.sec-label:first-child { margin-top: 0; }
+
+/* Helper text under labels */
+.sec-note {
+  font-size: 13px;
+  color: rgba(255,255,255,.5);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+
+/* ============================================================
+   CARD  (white surface used throughout)
+   ============================================================ */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.card-hd {
+  padding: 13px 16px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.3;
+}
+.card-hd .badge {
+  font-size: 10px; font-weight: 700;
+  background: rgba(255,255,255,.18);
+  padding: 3px 8px; border-radius: 20px;
+  margin-left: auto; flex-shrink: 0; opacity: .8;
+}
+.card-bd { padding: 16px; }
+.card-bd p    { font-size: 14px; line-height: 1.65; color: var(--text); }
+.card-bd .hint{ font-size: 12px; color: var(--muted); font-style: italic; margin-top: 8px; line-height: 1.5; }
+
+
+/* ============================================================
+   HOME — TOC rows
+   ============================================================ */
+.toc-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--rule);
+  touch-action: manipulation;
+}
+.toc-row:last-child { border-bottom: none; }
+.toc-row:active     { background: var(--surface); }
+
+.toc-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.toc-text { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+.toc-text.sub { font-weight: 400; font-size: 13px; color: #555; padding-left: 6px; }
+.toc-chev { color: var(--muted); font-size: 18px; flex-shrink: 0; transition: transform .22s; }
+.toc-chev.open { transform: rotate(90deg); }
+
+/* Tools dropdown drawer */
+.toc-drawer { background: var(--surface); }
+.toc-drawer .toc-row { padding-left: 24px; }
+.toc-drawer .toc-row:active { background: #e4e8f0; }
+
+/* Progress card */
+.progress-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.prog-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.prog-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.prog-pct   { font-size: 24px; font-weight: 800; color: var(--blue); }
+
+
+/* ============================================================
+   GUIDE — Pillar step lists
+   ============================================================ */
+.steps { margin-top: 12px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.step  { display: flex; gap: 10px; padding: 6px 0; font-size: 13px; line-height: 1.45; color: var(--text); }
+.step-arrow { color: var(--blue); font-weight: 800; flex-shrink: 0; font-size: 15px; }
+.step-key   { font-weight: 700; }
+
+
+/* ============================================================
+   QUICK REFERENCE — icon rows
+   ============================================================ */
+.qr-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.qr-row:last-child { border-bottom: none; padding-bottom: 0; }
+.qr-icon   { font-size: 20px; flex-shrink: 0; width: 30px; text-align: center; padding-top: 1px; }
+.qr-title  { font-size: 14px; font-weight: 700; color: var(--text); }
+.qr-detail { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 3px; }
+
+
+/* ============================================================
+   WEEKS — Checklist items
+   ============================================================ */
+.ck-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.ck-item:last-child { border-bottom: none; padding-bottom: 0; }
+.ck-item input[type=checkbox] {
+  width: 24px; height: 24px; flex-shrink: 0; margin-top: 1px;
+  cursor: pointer; accent-color: var(--blue); touch-action: manipulation;
+}
+.ck-item label      { cursor: pointer; flex: 1; }
+.ck-action          { font-size: 14px; font-weight: 700; line-height: 1.3; }
+.ck-detail          { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+.ck-item.done .ck-action { text-decoration: line-through; opacity: .38; }
+.ck-item.done .ck-detail { opacity: .38; }
+.wk-prog {
+  font-size: 11px; font-weight: 700;
+  background: rgba(255,255,255,.18); color: #fff;
+  padding: 3px 9px; border-radius: 20px;
+  margin-left: auto; flex-shrink: 0;
+}
+
+
+/* ============================================================
+   DIARY — A1 Efficiency tracker + A2 Sleep diary
+   ============================================================ */
+
+/* Shared input style for tracker and diary */
+.field-input {
+  width: 100%;
+  padding: 10px 11px;
+  font-size: 16px;           /* 16px prevents iOS auto-zoom */
+  font-family: inherit;
+  border: 1.5px solid var(--rule);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field-input:focus         { border-color: var(--blue); }
+.field-input[readonly]     { background: #e8f8f5; color: var(--teal); font-weight: 700; cursor: default; }
+.field-input[readonly]:focus { border-color: var(--rule); box-shadow: none; }
+
+/* Auto tag */
+.auto-tag {
+  font-size: 9px;
+  color: var(--teal);
+  margin-left: 3px;
+  vertical-align: middle;
+}
+
+/* A1 Efficiency tracker rows */
+.eff-row { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--rule); padding: 14px; margin-bottom: 12px; }
+.eff-hd  { font-size: 14px; font-weight: 700; color: var(--blue); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.eff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.eff-grid .full { grid-column: 1 / -1; }
+.eff-grid label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); display: block; margin-bottom: 4px; }
+
+/* A2 Sleep diary day */
+.diary-day     { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--rule); margin-bottom: 14px; overflow: hidden; }
+.diary-day-hd  { background: var(--blue); color: #fff; padding: 11px 16px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.diary-fields  { padding: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.diary-field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); display: block; margin-bottom: 4px; }
+
+/* Efficiency badges */
+.eff-badge      { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; display: inline-flex; align-items: center; }
+.eff-badge.good { background: var(--success-lt); color: var(--success); }
+.eff-badge.warn { background: var(--amber-lt);   color: var(--amber); }
+.eff-badge.bad  { background: var(--red-lt);      color: var(--red); }
+
+
+/* ============================================================
+   JOURNAL — Worry entries (A3)
+   ============================================================ */
+.worry-row { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--rule); margin-bottom: 14px; overflow: hidden; }
+.worry-hd  { background: var(--teal); color: #fff; padding: 11px 16px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.worry-date {
+  margin-left: auto;
+  background: rgba(255,255,255,.2); border: none; color: #fff;
+  font-size: 12px; padding: 4px 9px; border-radius: 6px;
+  width: 136px; outline: none; -webkit-appearance: none; font-family: inherit;
+}
+.worry-fields { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Shared textarea / text / number / date inputs */
+textarea, input[type=text], input[type=number], input[type=date] {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--rule);
+  border-radius: 8px;
+  padding: 11px 13px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color .2s;
+}
+textarea            { resize: vertical; min-height: 80px; line-height: 1.55; }
+textarea:focus,
+input:focus         { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(45,107,228,.12); }
+
+.field-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; display: block; }
+
+
+/* ============================================================
+   BELIEFS LOG (A4)
+   ============================================================ */
+.belief-row { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--rule); margin-bottom: 14px; padding: 16px; }
+.belief-num { font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+.ratings-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.ratings-row label { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); display: block; margin-bottom: 4px; }
+.ratings-row input { text-align: center; }
+
+
+/* ============================================================
+   PLAN — Personal rules (A5) + Relapse plan (A6)
+   ============================================================ */
+.rule-row { display: flex; align-items: flex-start; gap: 12px; background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--rule); padding: 12px 14px; margin-bottom: 10px; }
+.rule-num { font-size: 17px; font-weight: 800; color: var(--amber); flex-shrink: 0; padding-top: 8px; min-width: 24px; }
+.rule-row textarea { min-height: 58px; border: none; background: transparent; padding: 6px 4px; resize: none; box-shadow: none !important; }
+
+.relapse-prompt    { margin-bottom: 18px; }
+.relapse-prompt .q { font-size: 13px; font-weight: 700; color: var(--amber); margin-bottom: 8px; }
+
+
+/* ============================================================
+   SCIENCE (A8)
+   ============================================================ */
+.sci-card        { background: var(--white); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+.sci-card h3     { padding: 12px 16px; font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: space-between; }
+.sci-card h3 .sci-chev { font-size: 14px; transition: transform .22s; }
+.sci-card h3 .sci-chev.open { transform: rotate(90deg); }
+.sci-body        { padding: 14px 16px; font-size: 13px; line-height: 1.75; color: var(--text); }
+
+
+/* ============================================================
+   ADD BUTTON
+   ============================================================ */
+.add-btn {
+  width: 100%;
+  padding: 15px;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 4px;
+  letter-spacing: .01em;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+}
+.add-btn:active { opacity: .85; }
+
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.section.active .card,
+.section.active .eff-row,
+.section.active .diary-day,
+.section.active .worry-row,
+.section.active .belief-row,
+.section.active .sci-card,
+.section.active .progress-card { animation: fadeUp .2s ease both; }
+
+.section.active :nth-child(2) { animation-delay: .04s; }
+.section.active :nth-child(3) { animation-delay: .08s; }
+.section.active :nth-child(4) { animation-delay: .12s; }
+.section.active :nth-child(5) { animation-delay: .15s; }
+.section.active :nth-child(6) { animation-delay: .18s; }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+
+<!-- ============================================================
+     TOP BAR
+     ============================================================ -->
+<div id="topbar">
+  <span class="logo">🌙</span>
+  <h1>CBT-I Sleep Guide</h1>
+  <span id="save-badge">Saved ✓</span>
+</div>
+
+
+<!-- ============================================================
+     PAGE CONTENT
+     ============================================================ -->
+<div id="pages">
+
+
+<!-- ══════════════════════════════════════════
+     HOME
+     ══════════════════════════════════════════ -->
+<div class="section active" id="sec-home">
+  <div class="page-title">Sleeping more like Luka 😴</div>
+  <div class="page-sub">Your evidence-based sleep program</div>
+
+  <!-- Progress summary -->
+  <div class="progress-card">
+    <div style="flex:1">
+      <div class="prog-title">Your 6-Week Progress</div>
+      <div class="prog-sub" id="prog-sub-text">Tap Weeks to start</div>
+    </div>
+    <div class="prog-pct" id="prog-pct">0%</div>
+  </div>
+
+  <!-- Contents / navigation card -->
+  <div class="card">
+    <div class="card-hd" style="background:var(--navy-mid)">📋 Contents</div>
+    <div style="padding:0">
+
+      <div class="toc-row" onclick="gotoSection('sec-pillars')">
+        <div class="toc-dot" style="background:var(--blue)"></div>
+        <div class="toc-text">The 5 Pillars of CBT-I</div>
+        <div class="toc-chev">›</div>
+      </div>
+
+      <div class="toc-row" onclick="gotoSection('sec-qr')">
+        <div class="toc-dot" style="background:var(--navy)"></div>
+        <div class="toc-text">Quick Reference &amp; Rules</div>
+        <div class="toc-chev">›</div>
+      </div>
+
+      <div class="toc-row" onclick="gotoSection('sec-checklist')">
+        <div class="toc-dot" style="background:var(--blue)"></div>
+        <div class="toc-text">6-Week Checklist</div>
+        <div class="toc-chev">›</div>
+      </div>
+
+      <!-- Tools dropdown -->
+      <div class="toc-row" onclick="toggleDrawer('toc-tools-drawer', this.querySelector('.toc-chev'))">
+        <div class="toc-dot" style="background:var(--teal)"></div>
+        <div class="toc-text">Tools</div>
+        <div class="toc-chev">›</div>
+      </div>
+      <div class="toc-drawer" id="toc-tools-drawer" style="display:none">
+        <div class="toc-row" onclick="gotoSection('sec-diary')">
+          <div class="toc-dot" style="background:var(--blue)"></div>
+          <div class="toc-text sub">A1 &amp; A2 · Sleep Diary &amp; Efficiency Tracker</div>
+          <div class="toc-chev">›</div>
+        </div>
+        <div class="toc-row" onclick="gotoSection('sec-worry')">
+          <div class="toc-dot" style="background:var(--teal)"></div>
+          <div class="toc-text sub">A3 · Worry Journal</div>
+          <div class="toc-chev">›</div>
+        </div>
+        <div class="toc-row" onclick="gotoSection('sec-beliefs')">
+          <div class="toc-dot" style="background:var(--teal)"></div>
+          <div class="toc-text sub">A4 · Sleep Beliefs Log</div>
+          <div class="toc-chev">›</div>
+        </div>
+        <div class="toc-row" onclick="gotoSection('sec-plan')">
+          <div class="toc-dot" style="background:var(--amber)"></div>
+          <div class="toc-text sub">A5–A7 · My Personal Plan</div>
+          <div class="toc-chev">›</div>
+        </div>
+      </div>
+
+      <div class="toc-row" onclick="gotoSection('sec-science')">
+        <div class="toc-dot" style="background:var(--navy-mid)"></div>
+        <div class="toc-text">A8 · The Science</div>
+        <div class="toc-chev">›</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--blue)">What is CBT-I?</div>
+    <div class="card-bd">
+      <p><b>CBT-I</b> (Cognitive Behavioral Therapy for Insomnia) is the <b>gold-standard, non-medication</b> treatment backed by 30+ years of clinical research. Unlike sleep aids it addresses the <em>root cause</em> — not just the symptoms — with no side effects and lasting results.</p>
+      <p class="hint">For the full evidence summary, see The Science (A8).</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--teal)">🔒 Your data stays private</div>
+    <div class="card-bd">
+      <p style="font-size:13px">Everything you type is saved <b>only on this device</b>. Nothing is sent anywhere. Works fully offline after the first load.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     GUIDE — The 5 Pillars
+     ══════════════════════════════════════════ -->
+<div class="section" id="sec-pillars">
+  <div class="page-title">The 5 Pillars</div>
+  <div class="page-sub">Core techniques of CBT-I</div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--blue)">1 · Sleep Restriction Therapy</div>
+    <div class="card-bd">
+      <p>The most powerful CBT-I technique. Temporarily compress your time in bed to match actual sleep time. This creates intense sleep pressure, consolidates fragmented sleep, and resets your sleep drive within 1–2 weeks.</p>
+      <div class="steps">
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Calculate avg sleep time</span> from your diary (e.g. 5.5 hrs)</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Set your sleep window:</span> wake time minus avg sleep + 30 min</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Hold the window strictly</span> even if sleepy earlier</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Expand by 15 min/week</span> once efficiency reaches 85%+</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--blue)">2 · Stimulus Control</div>
+    <div class="card-bd">
+      <p>Retrain your brain to link bed exclusively with sleep — not wakefulness, anxiety, or screen time. This rebuilds the conditioned sleep response that insomnia erodes.</p>
+      <div class="steps">
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Only go to bed when sleepy,</span> not just tired or at a fixed time</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Leave bed if awake &gt;20 min</span> — do something calm until sleepy again</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Bed = sleep only.</span> No phones, TV, reading, or worry in bed</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Same wake time daily,</span> weekends included — non-negotiable</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--teal)">3 · Cognitive Restructuring</div>
+    <div class="card-bd">
+      <p>Identify and challenge catastrophic thoughts about sleep. Worry and rumination create cortisol and arousal — the exact opposite of what sleep needs.</p>
+      <div class="steps">
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Catch the thought:</span> "I'll never function tomorrow"</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Examine the evidence:</span> "Have I actually failed after bad nights before?"</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Replace realistically:</span> "I've coped fine on less sleep many times"</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Use a worry journal</span> — write anxious thoughts before bed, then close it</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--blue)">4 · Sleep Hygiene</div>
+    <div class="card-bd">
+      <p>Environmental and biological factors that support your circadian rhythm. Necessary but not sufficient alone — hygiene rarely cures insomnia by itself.</p>
+      <div class="steps">
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Morning sunlight:</span> 10–15 min within 1 hr of waking</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Cool bedroom:</span> 65–68°F / 18–20°C</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Cut caffeine early</span> — half-life 5–7 hrs, last cup by 1–2pm</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Avoid alcohol</span> — fragments second-half sleep; suppresses REM</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--blue)">5 · Relaxation Training</div>
+    <div class="card-bd">
+      <p>Reduce physiological hyperarousal — elevated heart rate, muscle tension, and racing mind. Practice as a skill, not just a rescue tool.</p>
+      <div class="steps">
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Progressive Muscle Relaxation:</span> tense + release each muscle group</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">4-7-8 breathing:</span> inhale 4s, hold 7s, exhale 8s</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Body scan meditation:</span> slow attention sweep from feet upward</span></div>
+        <div class="step"><span class="step-arrow">→</span><span><span class="step-key">Practice nightly</span> — not only on bad nights. Build the reflex.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     QUICK REFERENCE
+     ══════════════════════════════════════════ -->
+<div class="section" id="sec-qr">
+  <div class="page-title">Quick Reference</div>
+  <div class="page-sub">Rules, obstacles &amp; red flags</div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--blue)">✅ Non-Negotiable Rules</div>
+    <div class="card-bd" style="padding:10px 16px">
+      <div class="qr-row"><div class="qr-icon">⏰</div><div><div class="qr-title">Same wake time every day</div><div class="qr-detail">Weekends included. The single most important rule.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">🛏️</div><div><div class="qr-title">Get out of bed if awake &gt;20 min</div><div class="qr-detail">Do something calm in dim light until sleepy, then return.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">📵</div><div><div class="qr-title">Bed = sleep only</div><div class="qr-detail">No phones, TV, reading, or worrying in bed.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">🕐</div><div><div class="qr-title">Stick to your sleep window</div><div class="qr-detail">Don't go to bed before your set time, even if very sleepy.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">☕</div><div><div class="qr-title">No caffeine after 1–2pm</div><div class="qr-detail">Caffeine has a 5–7 hr half-life — still active at midnight.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">😴</div><div><div class="qr-title">No naps</div><div class="qr-detail">Or max 20 min before 3pm. Bleeds off the sleep pressure you're building.</div></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--teal)">⚠️ Common Obstacles</div>
+    <div class="card-bd" style="padding:10px 16px">
+      <div class="qr-row"><div class="qr-icon">😵</div><div><div class="qr-title">"I can't stay awake during the day"</div><div class="qr-detail">Expected and temporary. Sleep pressure is building — the mechanism is working.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">🚶</div><div><div class="qr-title">"I quit after 3 days"</div><div class="qr-detail">Weeks 1–2 are the hardest. Most people abandon just before results arrive.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">📉</div><div><div class="qr-title">"It's making things worse"</div><div class="qr-detail">Short-term worse is the process. Track your efficiency — numbers will turn.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">😰</div><div><div class="qr-title">"I lie awake anxious about sleep"</div><div class="qr-detail">Normal. Add the worry journal (A3) and cognitive restructuring from Week 3.</div></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="background:var(--red)">🏥 Seek Professional Help If...</div>
+    <div class="card-bd" style="padding:10px 16px">
+      <div class="qr-row"><div class="qr-icon">🔴</div><div><div class="qr-title">Snoring, gasping, or morning headaches</div><div class="qr-detail">May indicate sleep apnea — see a doctor before continuing.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">🦵</div><div><div class="qr-title">Uncomfortable leg sensations at night</div><div class="qr-detail">Possible restless leg syndrome — requires medical evaluation.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">🧠</div><div><div class="qr-title">Insomnia tied to PTSD or depression</div><div class="qr-detail">CBT-I still helps but works better with professional support alongside.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">📅</div><div><div class="qr-title">No improvement after full 6 weeks</div><div class="qr-detail">A sleep specialist can diagnose underlying conditions.</div></div></div>
+      <div class="qr-row"><div class="qr-icon">💊</div><div><div class="qr-title">Currently on prescription sleep meds</div><div class="qr-detail">Do not taper without medical guidance — consult your doctor first.</div></div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     WEEKS — 6-Week Checklist
+     ══════════════════════════════════════════ -->
+<div class="section" id="sec-checklist">
+  <div class="page-title">6-Week Checklist</div>
+  <div class="page-sub">Tap each action to mark it done</div>
+  <div id="checklist-cards"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     DIARY — A1 Efficiency Tracker + A2 Sleep Diary
+     ══════════════════════════════════════════ -->
+<div class="section" id="sec-diary">
+  <div class="page-title">Sleep Tracking</div>
+  <div class="page-sub">A1 · Efficiency Tracker &amp; A2 · Sleep Diary</div>
+
+  <div class="sec-label">A1 · Weekly Efficiency Tracker</div>
+  <p class="sec-note">Goal: reach and maintain 85%+. Extend window by 15 min/week when above 85% for 5+ consecutive nights. Fields marked <span style="color:var(--teal);font-size:11px;font-weight:700">auto</span> calculate from your diary below.</p>
+  <div id="eff-tracker"></div>
+
+  <div class="sec-label" style="margin-top:28px">A2 · Daily Sleep Diary</div>
+  <p class="sec-note">Sleep Efficiency = Total Sleep ÷ Time in Bed × 100. Fill in times as e.g. "11pm" or "23:00".</p>
+  <div id="sleep-diary"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     JOURNAL — A3 Worry Journal
+     ══════════════════════════════════════════ -->
+<div class="section" id="sec-worry">
+  <div class="page-title">Worry Journal</div>
+  <div class="page-sub">A3 · Fill in each evening before bed</div>
+  <p class="sec-note">Write the anxious thought, examine the evidence, then record a realistic counter. Close this when done — do not re-read at night.</p>
+  <div id="worry-rows"></div>
+  <button class="add-btn" onclick="addWorryRow()">+ Add Entry</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     BELIEFS — A4 Sleep Beliefs Log
+     ══════════════════════════════════════════ -->
+<div class="section" id="sec-beliefs">
+  <div class="page-title">Sleep Beliefs Log</div>
+  <div class="page-sub">A4 · Rate &amp; revise your core beliefs</div>
+  <p class="sec-note">List your most persistent beliefs about sleep. Rate how strongly you hold each (0–10), then revisit at Week 3 and Week 6.</p>
+  <div id="beliefs-rows"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     PLAN — A5 Rules · A6 Relapse · A7 Notes
+     ══════════════════════════════════════════ -->
+<div class="section" id="sec-plan">
+  <div class="page-title">My Sleep Plan</div>
+  <div class="page-sub">A5 · Rules · A6 · Relapse Plan · A7 · Notes</div>
+
+  <div class="sec-label">A5 · My Personal Sleep Rules <span style="font-weight:400;color:rgba(255,255,255,.35)">(fill in at Week 6)</span></div>
+  <p class="sec-note">The practices that mattered most for you — your long-term maintenance plan.</p>
+  <div id="rules-rows"></div>
+
+  <div class="sec-label" style="margin-top:28px">A6 · Relapse Response Plan</div>
+  <p class="sec-note">Bad patches are normal. A written plan means you respond calmly rather than catastrophising.</p>
+  <div id="relapse-fields"></div>
+
+  <div class="sec-label" style="margin-top:28px">A7 · General Notes</div>
+  <div class="field-label" style="color:rgba(255,255,255,.4)">Observations, patterns, questions for your doctor</div>
+  <textarea id="a7-notes" rows="7" placeholder="Write anything here..."></textarea>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SCIENCE — A8 Evidence Summary
+     ══════════════════════════════════════════ -->
+<div class="section" id="sec-science">
+  <div class="page-title">The Science of CBT-I</div>
+  <div class="page-sub">A8 · Evidence summary</div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--navy-mid)">What Is CBT-I?</h3>
+    <div class="sci-body">CBT-I is a structured psychological treatment that targets the thoughts, behaviors, and physiological patterns that perpetuate chronic insomnia. Developed from behavioral sleep medicine research in the 1970s–80s, with landmark contributions from Richard Bootzin (stimulus control, 1972), Arthur Spielman (sleep restriction, 1987), and Charles Morin (cognitive model, 1993).</div>
+  </div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--blue)">Why CBT-I Matters: The Scale of the Problem</h3>
+    <div class="sci-body">Chronic insomnia affects <b>10–15% of adults worldwide</b> — roughly 1 billion people — making it the most prevalent sleep disorder and one of the most common health complaints in primary care. Yet the majority never receive effective treatment.<br><br>The consequences extend far beyond tiredness:<br><br><b>Mental health:</b> People with insomnia are 10× more likely to develop clinical depression and 17× more likely to develop anxiety disorders (Breslau et al., 1996; Ford &amp; Kamerow, 1989).<br><br><b>Physical health:</b> Insufficient sleep is linked to elevated risk of cardiovascular disease, type 2 diabetes, obesity, and impaired immune function (Cappuccio et al., 2010; Spiegel et al., 2009).<br><br><b>Cognitive function:</b> Even one week of sleeping 6 hours per night produces cognitive deficits equivalent to two full nights of total sleep deprivation — yet most people do not notice their own impairment (Van Dongen et al., 2003).<br><br><b>Economic cost:</b> Insomnia costs the US economy an estimated $63 billion annually in lost productivity alone (Kessler et al., 2011, <em>Sleep</em>).<br><br>Despite this, the most commonly prescribed response — sleeping pills — treats the symptom without addressing the cause, and creates new problems through dependence and rebound insomnia. CBT-I is the only intervention that addresses the underlying mechanisms.</div>
+  </div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--teal)">Clinical Efficacy</h3>
+    <div class="sci-body">Validated in over 100 randomized controlled trials (RCTs):<br><br><b>Sleep onset latency</b> reduced by 30–54 minutes on average.<br><b>Wake after sleep onset</b> decreases by 30–60 minutes in most participants.<br><b>Sleep efficiency</b> improves from ~65% baseline to 80–90%+.<br><b>Remission rates</b> of 50–60%, response rates of 70–80%.<br><br>Trauer et al. (2015, <em>Annals of Internal Medicine</em>) — landmark meta-analysis of 20 RCTs (n=1,162) confirmed robust, durable improvements.</div>
+  </div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--teal)">What CBT-I Does to Your Brain</h3>
+    <div class="sci-body">CBT-I works by targeting three biological systems that maintain chronic insomnia:<br><br><b>1. Sleep drive (Process S):</b> The homeostatic pressure that builds the longer you are awake. Sleep restriction rebuilds this drive by consolidating time in bed. Within 1–2 weeks, most people fall asleep faster and wake less — because the drive is strong enough to carry them through the night.<br><br><b>2. Circadian rhythm (Process C):</b> Your body clock governs when you feel alert versus sleepy. The fixed wake time in CBT-I anchors this rhythm. Even one week of inconsistent wake times shifts the circadian phase and fragments sleep (Phillips et al., 2017).<br><br><b>3. Conditioned arousal:</b> Through repeated nights of lying awake in bed, the bedroom itself becomes a cue for wakefulness. Stimulus control reverses this, extinguishing the arousal response so the body automatically associates bed with sleep.<br><br>These changes are <b>structural and durable</b>. Follow-up studies at 12 and 24 months consistently show maintained gains — or further improvement — after treatment ends.</div>
+  </div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--blue)">CBT-I vs. Sleep Medication</h3>
+    <div class="sci-body">The American College of Physicians (2016) recommends CBT-I as the <b>first-line treatment</b> for chronic insomnia, preferring it over pharmacotherapy.<br><br><b>Short term:</b> Similar improvements in the first 4–8 weeks.<br><b>Long term:</b> CBT-I benefits maintained at 6- and 12-month follow-up. Medication benefits disappear when discontinued; rebound insomnia is common.<br><b>Side effects:</b> CBT-I produces none. Sleep medications carry risks including dependence, tolerance, and cognitive impairment.</div>
+  </div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--amber)">Real-World Results: What People Experience</h3>
+    <div class="sci-body">Clinical trial outcomes translate directly into daily life. Across studies, people completing CBT-I typically report:<br><br><b>Falling asleep:</b> Time to fall asleep drops from 60–90 minutes to under 20 minutes by Week 4–6. Most describe the shift as feeling "naturally sleepy" at bedtime for the first time in years.<br><br><b>Staying asleep:</b> Night wakings reduce substantially — time awake during the night drops by 30–60 minutes on average.<br><br><b>Daytime functioning:</b> Energy, mood, and concentration improve significantly — often before subjective sleep quality fully improves (Harvey et al., 2014).<br><br><b>Relationship with bed:</b> Many people describe a fundamental shift — from dreading bedtime to feeling neutral or relaxed about it. The bedroom no longer triggers the stress response.<br><br><b>Long-term confidence:</b> CBT-I gives people skills they own. Graduates report significantly greater self-efficacy around sleep and are better equipped to manage future bad patches.</div>
+  </div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--teal)">How Each Component Works</h3>
+    <div class="sci-body"><b>Sleep Restriction (Spielman, 1987):</b> Builds homeostatic sleep pressure. Rapid improvements in sleep efficiency within 1–2 weeks, typically 85–90%+ by Week 3.<br><br><b>Stimulus Control (Bootzin, 1972):</b> Extinguishes the conditioned arousal response to the bedroom. One of the most replicated findings in behavioral sleep medicine.<br><br><b>Cognitive Restructuring (Morin, 1993):</b> Targets catastrophic appraisals. Harvey et al. (2014) found dysfunctional beliefs are a primary maintaining factor in chronic insomnia.<br><br><b>Relaxation Training:</b> PMR and mindfulness reduce pre-sleep cortisol and heart rate variability.<br><br><b>Sleep Hygiene:</b> Weak as a standalone treatment; effective as a supporting component.</div>
+  </div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--teal)">Digital CBT-I: Accessible and Effective</h3>
+    <div class="sci-body">Digital and self-guided CBT-I delivery makes treatment accessible to the vast majority of insomnia sufferers who cannot access a trained therapist.<br><br><b>The evidence is strong:</b> Zachariae et al. (2016, <em>Sleep Medicine Reviews</em>) — a meta-analysis of 11 RCTs — found digital CBT-I produced effect sizes of 0.8–1.1, nearly identical to face-to-face therapy across all primary sleep outcomes.<br><br><b>Why self-guided works:</b> The active ingredients of CBT-I are behavioural techniques people apply themselves — not things a therapist does to them. The therapist's role is largely psychoeducation and accountability. A well-designed programme provides both.<br><br><b>Adherence is everything:</b> Outcome is strongly predicted by adherence to the sleep window and stimulus control rules — not by the delivery method. People who follow the protocol in the first two weeks achieve remission rates comparable to face-to-face treatment (Espie et al., 2012).</div>
+  </div>
+
+  <div class="sci-card">
+    <h3 style="background:var(--amber)">Who It Works For</h3>
+    <div class="sci-body"><b>Primary insomnia:</b> Strongest evidence base — 30+ years of RCTs.<br><b>Comorbid insomnia</b> (with depression, anxiety, chronic pain, cancer): CBT-I improves both sleep and the comorbid condition.<br><b>Older adults:</b> Effective with modest adaptations; particularly valuable given medication risks.<br><b>Digital/self-guided delivery:</b> Nearly as effective as therapist-delivered treatment (effect sizes 0.8–1.1) — Zachariae et al. (2016).</div>
+  </div>
+
+  <!-- References — collapsed by default, tap to expand -->
+  <div class="sci-card">
+    <h3 style="background:var(--navy-mid);cursor:pointer" onclick="toggleDrawer('refs-body', this.querySelector('.sci-chev'))">
+      Key References
+      <span class="sci-chev">›</span>
+    </h3>
+    <div class="sci-body" id="refs-body" style="display:none;font-size:12px;line-height:1.8">
+      Bootzin, R.R. (1972). Stimulus control treatment for insomnia. <em>APA Proceedings.</em><br>
+      Breslau, N. et al. (1996). Sleep disturbance and psychiatric disorders. <em>Biological Psychiatry, 39(6).</em><br>
+      Cappuccio, F.P. et al. (2010). Sleep duration and cardiovascular outcomes. <em>European Heart Journal, 32(12).</em><br>
+      Espie, C.A. et al. (2012). Digital CBT-I. <em>Sleep, 35(6).</em><br>
+      Ford, D.E. &amp; Kamerow, D.B. (1989). Insomnia and psychiatric disorders. <em>JAMA, 262(11).</em><br>
+      Harvey, A.G. et al. (2014). Dysfunctional beliefs and daytime functioning. <em>Sleep, 37(5).</em><br>
+      Kessler, R.C. et al. (2011). Insomnia and workplace productivity. <em>Sleep, 34(9).</em><br>
+      Morin, C.M. (1993). <em>Insomnia: Psychological Assessment and Management.</em><br>
+      Morin, C.M. et al. (2006). Psychological and behavioral treatment. <em>Sleep, 29(11).</em><br>
+      Morin, C.M. et al. (2009). Combined therapeutics. <em>JAMA, 301(19).</em><br>
+      Phillips, A.J.K. et al. (2017). Irregular sleep/wake patterns. <em>Science Advances, 3(6).</em><br>
+      Qaseem, A. et al. (2016). ACP guideline. <em>Annals of Internal Medicine, 165(2).</em><br>
+      Spielman, A.J. et al. (1987). Sleep restriction. <em>Sleep, 10(1).</em><br>
+      Spiegel, K. et al. (2009). Sleep and metabolic function. <em>Nature Reviews Endocrinology, 5(8).</em><br>
+      Trauer, J.M. et al. (2015). Systematic review. <em>Annals of Internal Medicine, 163(3).</em><br>
+      Van Dongen, H.P.A. et al. (2003). Cumulative sleep debt. <em>Sleep, 26(2).</em><br>
+      Zachariae, R. et al. (2016). Digital CBT-I. <em>Sleep Medicine Reviews, 30.</em>
+    </div>
+  </div>
+
+</div><!-- /sec-science -->
+
+
+</div><!-- /pages -->
+
+
+<!-- ============================================================
+     BOTTOM NAV
+     ============================================================ -->
+<nav id="nav">
+  <button class="nav-btn active" data-sec="sec-home"      onclick="showSection('sec-home',this)">
+    <span class="nb-icon">🏠</span><span class="nb-label">Home</span>
+  </button>
+  <button class="nav-btn" data-sec="sec-pillars"          onclick="showSection('sec-pillars',this)">
+    <span class="nb-icon">📖</span><span class="nb-label">Guide</span>
+  </button>
+  <button class="nav-btn" data-sec="sec-checklist"        onclick="showSection('sec-checklist',this)">
+    <span class="nb-icon">✅</span><span class="nb-label">Weeks</span>
+  </button>
+  <button class="nav-btn" data-sec="sec-diary"            onclick="showSection('sec-diary',this)">
+    <span class="nb-icon">📓</span><span class="nb-label">Diary</span>
+  </button>
+  <button class="nav-btn" data-sec="sec-worry"            onclick="showSection('sec-worry',this)">
+    <span class="nb-icon">🧠</span><span class="nb-label">Journal</span>
+  </button>
+  <button class="nav-btn" data-sec="sec-plan"             onclick="showSection('sec-plan',this)">
+    <span class="nb-icon">📝</span><span class="nb-label">Plan</span>
+  </button>
+</nav>
+
+</div><!-- /app -->
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+
+/* ============================================================
+   CONTENT DATA
+   Edit week tasks, diary fields, or relapse prompts here.
+   ============================================================ */
+
+var WEEKS = [
+  { num:1, title:'Foundation + Sleep Diary', color:'var(--blue)', tools:'Sleep Diary · Efficiency Tracker', items:[
+    ['Start your sleep diary',        'Track every morning: bedtime, wake time, times woken, total sleep, energy & mood 1–10'],
+    ['Set your fixed wake time',      'Choose it now and do not change it — weekends included. This is the anchor of the whole program.'],
+    ['Calculate Sleep Efficiency',    'Total Sleep ÷ Time in Bed × 100. Baseline is usually 60–75% for insomnia sufferers.'],
+    ['Begin stimulus control tonight','No bed except for sleep. Leave bed if awake >20 min. Start tonight.'],
+    ['Find your average total sleep', 'From 3–5 nights of diary data — you\'ll need this for Week 2 sleep restriction.'],
+    ['No naps',                       'If exhausted: one 20-min nap before 3pm maximum. Not in bed.'],
+  ]},
+  { num:2, title:'Start Sleep Restriction', color:'var(--blue)', tools:'Sleep Diary · Efficiency Tracker', items:[
+    ['Calculate your sleep window',  'Wake time minus (avg sleep time + 30 min). E.g. wake at 7am, avg sleep 5.5hrs → bed at 1am.'],
+    ['Enforce the window strictly',  'Do not go to bed before your set time, even if very sleepy. Sit up, do something calm.'],
+    ['Track efficiency daily',       'You\'re looking for an upward trend — it won\'t feel good yet but numbers should improve.'],
+    ['Begin nightly relaxation',     '10 minutes of PMR or 4-7-8 breathing before your sleep window starts.'],
+    ['Expect significant fatigue',   'This week is hard by design. Daytime sleepiness means the sleep drive is building. Keep going.'],
+    ['Do not nap',                   'Napping releases sleep pressure and undermines the restriction. Resist.'],
+  ]},
+  { num:3, title:'Cognitive Work Begins', color:'var(--teal)', tools:'Worry Journal · Beliefs Log', items:[
+    ['Extend window if efficiency >85%', 'If you\'ve hit 85%+ for 5+ nights → move bedtime 15 min earlier.'],
+    ['Start the worry journal',          'Each evening before wind-down, write all sleep-related worries. Close the notebook — done.'],
+    ['List your core sleep beliefs',     'Write out your 3–5 most persistent thoughts (e.g. \'I need 8 hours or I\'ll get sick\').'],
+    ['Challenge each belief',            'Ask: Is this always true? What\'s the evidence? Write a more realistic counter-belief.'],
+    ['Continue all Week 1–2 practices',  'Diary, stimulus control, sleep window, relaxation — these continue every week.'],
+    ['Notice early wins',                'Most people see first meaningful improvement in Week 3. Log mood changes in diary.'],
+  ]},
+  { num:4, title:'Consolidation', color:'var(--amber)', tools:'Beliefs Log', items:[
+    ['Adjust window again if ready',         'Check efficiency — if still >85% for 5 nights, extend another 15 min.'],
+    ['Try paradoxical intention',            'Lie in bed with eyes open and try to stay awake. This defuses sleep-onset performance anxiety.'],
+    ['Cover clocks at night',                'Checking the time amplifies anxiety. Face clocks away or remove them from the room.'],
+    ['Review and update beliefs list',       'Which thoughts have softened? Which are still active? Revise your counter-statements.'],
+    ['Continue all stimulus control rules',  'No exceptions, even on weekends or after travel. Consistency is everything now.'],
+    ['Begin tapering sleep aids if needed',  'Consult your doctor before reducing any prescription medication.'],
+  ]},
+  { num:5, title:'Refinement', color:'var(--amber)', tools:'', items:[
+    ['Continue window expansion',        'Same rule: 15 min earlier bedtime per week when efficiency stays above 85%.'],
+    ['Build a 30-min wind-down routine', 'Same sequence every night: dim lights → calm activity → relaxation → bed.'],
+    ['Address remaining anxiety triggers','Identify situations that still spike sleep anxiety and plan for them.'],
+    ['Practice relaxation proactively',  'The goal is a trained reflex — practice even on good nights.'],
+    ['Internalize the rules',            'You should need this sheet less. The principles are becoming habit.'],
+  ]},
+  { num:6, title:'Long-Term Maintenance', color:'var(--amber)', tools:'Personal Rules · Relapse Plan', items:[
+    ['Final window assessment',      'You should now be close to your natural sleep need — typically 7–8 hrs for adults.'],
+    ['Write your personal sleep rules','The 3–5 practices that made the biggest difference for you specifically.'],
+    ['Create a relapse response plan','Bad patches will happen. Decide now: if I have 5+ bad nights, I will re-restrict for 1–2 weeks.'],
+    ['Know your early warning signs', 'What does your insomnia look like when returning? Identify it early.'],
+    ['Taper diary to weekly check-ins','You don\'t need daily tracking forever — weekly is enough for maintenance.'],
+    ['Celebrate',                     'CBT-I is an evidence-based skill you now carry for life. Most people never need medication.'],
+  ]},
+];
+
+// Days shown in the sleep diary (A2)
+var DAYS      = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+var WEEK_DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+
+// Diary fields — set auto:true to make a field read-only and auto-calculated
+var DIARY_FIELDS = [
+  { id:'lights', label:'Lights Out'  },
+  { id:'asleep', label:'Fell Asleep' },
+  { id:'woke',   label:'Times Woke'  },
+  { id:'wake',   label:'Final Wake'  },
+  { id:'outbed', label:'Out of Bed'  },
+  { id:'total',  label:'Total Sleep', auto:true },
+  { id:'effic',  label:'Efficiency %', auto:true },
+  { id:'energy', label:'Energy (1-10)' },
+  { id:'mood',   label:'Mood (1-10)'   },
+];
+
+// Relapse plan prompts (A6)
+var RELAPSE_PROMPTS = [
+  { id:'warning', q:'My early warning signs are:',                     ph:'What signals tell you insomnia is returning?' },
+  { id:'action',  q:'If I have 5+ bad nights in a row, I will:',       ph:'Specific actions you\'ll take...' },
+  { id:'window',  q:'My new sleep window for re-restriction will be:',  ph:'e.g. 12:30am → 7:00am' },
+  { id:'weeks',   q:'I will re-restrict for ___ weeks, then reassess.', ph:'Number of weeks...' },
+  { id:'contact', q:'The person / resource I\'ll contact if needed:',   ph:'Name, app, or professional...' },
+];
+
+
+/* ============================================================
+   STORAGE  (localStorage, key: cbti_v2)
+   ============================================================ */
+var DB = {};
+try { DB = JSON.parse(localStorage.getItem('cbti_v2') || '{}'); } catch(e) {}
+
+var saveTimer;
+function save(key, val) {
+  DB[key] = val;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function() {
+    try { localStorage.setItem('cbti_v2', JSON.stringify(DB)); } catch(e) {}
+    var badge = document.getElementById('save-badge');
+    badge.classList.add('show');
+    setTimeout(function() { badge.classList.remove('show'); }, 1500);
+  }, 400);
+}
+function get(key, def) {
+  if (def === undefined) def = '';
+  return DB[key] !== undefined ? DB[key] : def;
+}
+
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  document.getElementById('pages').scrollTop = 0;
+}
+function gotoSection(id) {
+  showSection(id, document.querySelector('.nav-btn[data-sec="' + id + '"]'));
+}
+
+// Generic show/hide drawer — used for TOC Tools and References
+function toggleDrawer(bodyId, chevEl) {
+  var body = document.getElementById(bodyId);
+  var open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  if (chevEl) chevEl.classList.toggle('open', open);
+}
+
+
+/* ============================================================
+   PROGRESS  (home screen summary)
+   ============================================================ */
+function updateProgress() {
+  var total = 0, done = 0;
+  WEEKS.forEach(function(wk) {
+    total += wk.items.length;
+    wk.items.forEach(function(_, i) { if (get('ck_' + wk.num + '_' + i, false)) done++; });
+  });
+  var pct = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-sub-text').textContent =
+    done === 0    ? 'Tap Weeks to start' :
+    pct === 100   ? 'Program complete! 🎉' :
+    done + ' of ' + total + ' actions done';
+}
+
+
+/* ============================================================
+   CHECKLIST  (sec-checklist)
+   ============================================================ */
+function buildChecklist() {
+  var container = document.getElementById('checklist-cards');
+  container.innerHTML = '';
+  WEEKS.forEach(function(wk) {
+    var doneCount = wk.items.filter(function(_, i) { return get('ck_' + wk.num + '_' + i, false); }).length;
+
+    var card = document.createElement('div');
+    card.className = 'card';
+
+    // Header
+    var hd = document.createElement('div');
+    hd.className = 'card-hd';
+    hd.style.background = wk.color;
+    hd.textContent = 'Week ' + wk.num + ' · ' + wk.title;
+    if (wk.tools) {
+      var badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = wk.tools;
+      hd.appendChild(badge);
+    }
+    var prog = document.createElement('span');
+    prog.className = 'wk-prog';
+    prog.style.marginLeft = 'auto';
+    prog.textContent = doneCount + '/' + wk.items.length;
+    hd.appendChild(prog);
+    card.appendChild(hd);
+
+    // Items
+    var body = document.createElement('div');
+    body.className = 'card-bd';
+    body.style.padding = '10px 16px';
+    wk.items.forEach(function(item, i) {
+      var checked = get('ck_' + wk.num + '_' + i, false);
+      var row = document.createElement('div');
+      row.className = 'ck-item' + (checked ? ' done' : '');
+      row.id = 'ci_' + wk.num + '_' + i;
+
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id   = 'cb_' + wk.num + '_' + i;
+      cb.checked = !!checked;
+      (function(wnum, idx) {
+        cb.onchange = function() { toggleCheck(wnum, idx, this); };
+      })(wk.num, i);
+
+      var lbl = document.createElement('label');
+      lbl.htmlFor = cb.id;
+      lbl.innerHTML = '<div class="ck-action">' + item[0] + '</div><div class="ck-detail">' + item[1] + '</div>';
+
+      row.appendChild(cb);
+      row.appendChild(lbl);
+      body.appendChild(row);
+    });
+    card.appendChild(body);
+    container.appendChild(card);
+  });
+  updateProgress();
+}
+
+function toggleCheck(wk, i, el) {
+  save('ck_' + wk + '_' + i, el.checked);
+  var row = document.getElementById('ci_' + wk + '_' + i);
+  row.classList.toggle('done', el.checked);
+  buildChecklist();
+}
+
+
+/* ============================================================
+   TIME HELPERS  (used by diary auto-calculations)
+   ============================================================ */
+function parseTime(s) {
+  if (!s) return null;
+  s = s.trim().toLowerCase().replace(/\s/g, '');
+  var ampm = s.match(/([ap])m?$/);
+  s = s.replace(/[apm]+$/, '');
+  var parts = s.indexOf(':') >= 0 ? s.split(':').map(Number) : [parseInt(s, 10), 0];
+  var h = parts[0], m = isNaN(parts[1]) ? 0 : parts[1];
+  if (isNaN(h)) return null;
+  if (ampm) {
+    if (ampm[1] === 'p' && h !== 12) h += 12;
+    if (ampm[1] === 'a' && h === 12) h = 0;
+  }
+  return h * 60 + m;
+}
+
+function minutesBetween(a, b) {
+  if (a === null || b === null) return null;
+  var d = b - a;
+  if (d <= 0) d += 1440;
+  return d;
+}
+
+// "5h 30m" format — used in diary day headers
+function fmtHrs(mins) {
+  if (!mins || mins <= 0) return '';
+  var h = Math.floor(mins / 60), m = Math.round(mins % 60);
+  return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+}
+
+// "5.5 hrs" decimal format — used in A1 tracker
+function fmtHrsDecimal(mins) {
+  if (!mins || mins <= 0) return '';
+  return (Math.round(mins / 60 * 10) / 10) + ' hrs';
+}
+
+
+/* ============================================================
+   DIARY CALCULATIONS  (A2 → A1)
+   ============================================================ */
+function calcDiaryDay(d) {
+  var asleep = parseTime(get('d_' + d + '_asleep'));
+  var wake   = parseTime(get('d_' + d + '_wake'));
+  var lights = parseTime(get('d_' + d + '_lights'));
+  var outbed = parseTime(get('d_' + d + '_outbed'));
+
+  var totalMins = minutesBetween(asleep, wake);
+  var tibMins   = minutesBetween(lights, outbed) || minutesBetween(lights, wake); // fallback if outbed blank
+  var effic     = (totalMins && tibMins && tibMins > 0) ? Math.round(totalMins / tibMins * 100) : null;
+
+  return { totalMins:totalMins, tibMins:tibMins, effic:effic };
+}
+
+function getWeekAverages() {
+  var tibVals = [], seVals = [], totalVals = [], lightsArr = [], wakeArr = [];
+  WEEK_DAYS.forEach(function(d) {
+    var r = calcDiaryDay(d);
+    if (r.tibMins   > 0)    tibVals.push(r.tibMins);
+    if (r.effic !== null)   seVals.push(r.effic);
+    if (r.totalMins > 0)    totalVals.push(r.totalMins);
+    var l = get('d_' + d + '_lights'), w = get('d_' + d + '_wake');
+    if (l && l.trim()) lightsArr.push(l.trim());
+    if (w && w.trim()) wakeArr.push(w.trim());
+  });
+  function avg(arr) { return arr.length ? arr.reduce(function(a,b){return a+b;},0)/arr.length : null; }
+  return {
+    avgTib:   avg(tibVals),
+    avgSe:    avg(seVals),
+    avgTotal: avg(totalVals),
+    window:   (lightsArr.length && wakeArr.length)
+      ? lightsArr[lightsArr.length-1] + ' → ' + wakeArr[wakeArr.length-1]
+      : null,
+  };
+}
+
+// Called whenever any diary field changes — updates auto fields in diary + A1 tracker
+function onDiaryChange(d) {
+  var r = calcDiaryDay(d);
+
+  // Update auto fields in this diary day
+  var totalEl = document.getElementById('d_' + d + '_total_inp');
+  var efficEl = document.getElementById('d_' + d + '_effic_inp');
+  if (totalEl) totalEl.value = fmtHrs(r.totalMins) || '';
+  if (efficEl) efficEl.value = r.effic !== null ? r.effic + '%' : '';
+
+  // Update badge in diary day header
+  var dayEl = totalEl && totalEl.closest('.diary-day');
+  if (dayEl) updateDayBadge(dayEl.querySelector('.diary-day-hd'), r.effic);
+
+  // Propagate to A1 tracker
+  updateTrackerAverages();
+}
+
+function updateDayBadge(hdEl, effic) {
+  var badge = hdEl.querySelector('.eff-badge');
+  if (effic !== null) {
+    var cls = effic >= 85 ? 'good' : effic >= 70 ? 'warn' : 'bad';
+    if (!badge) { badge = document.createElement('span'); badge.style.cssText = 'font-size:10px;padding:2px 8px'; hdEl.appendChild(badge); }
+    badge.className = 'eff-badge ' + cls;
+    badge.textContent = effic + '%';
+  } else if (badge) {
+    badge.remove();
+  }
+}
+
+function updateTrackerAverages() {
+  var avgs = getWeekAverages();
+  for (var w = 1; w <= 6; w++) {
+    var winEl   = document.getElementById('eff_' + w + '_win_inp');
+    var totalEl = document.getElementById('eff_' + w + '_sleep_inp');
+    var tibEl   = document.getElementById('eff_' + w + '_tib_inp');
+    var seEl    = document.getElementById('eff_' + w + '_se_inp');
+    var hdEl    = document.getElementById('eff_' + w + '_hd');
+
+    if (winEl   && avgs.window)            winEl.value   = avgs.window;
+    if (totalEl && avgs.avgTotal !== null) totalEl.value = fmtHrsDecimal(avgs.avgTotal);
+    if (tibEl   && avgs.avgTib   !== null) tibEl.value   = fmtHrsDecimal(avgs.avgTib);
+    if (seEl    && avgs.avgSe    !== null) {
+      var rounded = Math.round(avgs.avgSe);
+      seEl.value = rounded + '%';
+      if (hdEl) {
+        var badge = hdEl.querySelector('.eff-badge');
+        var cls = rounded >= 85 ? 'good' : rounded >= 70 ? 'warn' : 'bad';
+        if (!badge) { badge = document.createElement('span'); hdEl.appendChild(badge); }
+        badge.className = 'eff-badge ' + cls;
+        badge.textContent = rounded + '%';
+      }
+    }
+  }
+}
+
+
+/* ============================================================
+   A1 — EFFICIENCY TRACKER  (sec-diary)
+   ============================================================ */
+function buildEffTracker() {
+  var container = document.getElementById('eff-tracker');
+  container.innerHTML = '';
+  var roStyle  = 'background:#e8f8f5;color:var(--teal);font-weight:700;cursor:default';
+  var autoTag  = '<span class="auto-tag">auto</span>';
+
+  for (var w = 1; w <= 6; w++) {
+    (function(ww) {
+      var row = document.createElement('div');
+      row.className = 'eff-row';
+
+      // Row header
+      var hd = document.createElement('div');
+      hd.className = 'eff-hd';
+      hd.id = 'eff_' + ww + '_hd';
+      hd.textContent = 'Week ' + ww;
+      row.appendChild(hd);
+
+      // Input grid
+      var grid = document.createElement('div');
+      grid.className = 'eff-grid';
+
+      function autoInput(labelHtml, id) {
+        var cell = document.createElement('div');
+        var lbl  = document.createElement('label');
+        lbl.innerHTML = labelHtml;
+        var inp = document.createElement('input');
+        inp.type = 'text';
+        inp.id   = id;
+        inp.readOnly = true;
+        inp.className = 'field-input';
+        inp.style.cssText = roStyle;
+        cell.appendChild(lbl);
+        cell.appendChild(inp);
+        return cell;
+      }
+
+      grid.appendChild(autoInput('Bed → Wake' + autoTag,       'eff_' + ww + '_win_inp'));
+      grid.appendChild(autoInput('Avg Total Sleep' + autoTag,  'eff_' + ww + '_sleep_inp'));
+      grid.appendChild(autoInput('Avg Time in Bed' + autoTag,  'eff_' + ww + '_tib_inp'));
+      grid.appendChild(autoInput('Avg SE %' + autoTag,         'eff_' + ww + '_se_inp'));
+
+      // Notes — the only manually editable field
+      var notesCell = document.createElement('div');
+      notesCell.className = 'full';
+      var notesLbl = document.createElement('label');
+      notesLbl.textContent = 'Notes / Adjustments';
+      var notesInp = document.createElement('input');
+      notesInp.type = 'text';
+      notesInp.className = 'field-input';
+      notesInp.placeholder = 'Notes...';
+      notesInp.value = get('eff_' + ww + '_notes');
+      notesInp.oninput = (function(week) {
+        return function() { save('eff_' + week + '_notes', this.value); };
+      })(ww);
+      notesCell.appendChild(notesLbl);
+      notesCell.appendChild(notesInp);
+      grid.appendChild(notesCell);
+
+      row.appendChild(grid);
+      container.appendChild(row);
+    })(w);
+  }
+  updateTrackerAverages();
+}
+
+
+/* ============================================================
+   A2 — SLEEP DIARY  (sec-diary)
+   ============================================================ */
+function buildDiary() {
+  var container = document.getElementById('sleep-diary');
+  container.innerHTML = '';
+  var autoStyle = 'background:#e8f8f5;color:var(--teal);font-weight:700;cursor:default';
+  var autoTag   = '<span class="auto-tag">auto</span>';
+
+  DAYS.forEach(function(day) {
+    var d = day.toLowerCase().slice(0, 3);
+    var r = calcDiaryDay(d);
+
+    // Day wrapper
+    var wrap = document.createElement('div');
+    wrap.className = 'diary-day';
+
+    // Day header with badge
+    var hd = document.createElement('div');
+    hd.className = 'diary-day-hd';
+    hd.textContent = day;
+    if (r.effic !== null) updateDayBadge(hd, r.effic);
+    wrap.appendChild(hd);
+
+    // Field grid
+    var grid = document.createElement('div');
+    grid.className = 'diary-fields';
+
+    DIARY_FIELDS.forEach(function(f) {
+      var cell = document.createElement('div');
+      cell.className = 'diary-field';
+
+      var lbl = document.createElement('label');
+      lbl.innerHTML = f.label + (f.auto ? autoTag : '');
+
+      var inp = document.createElement('input');
+      inp.type = 'text';
+
+      if (f.auto) {
+        inp.id = 'd_' + d + '_' + f.id + '_inp';
+        inp.readOnly = true;
+        inp.style.cssText = autoStyle;
+        inp.value = f.id === 'total'
+          ? (fmtHrs(r.totalMins) || '')
+          : (r.effic !== null ? r.effic + '%' : '');
+      } else {
+        inp.value = get('d_' + d + '_' + f.id);
+        (function(key, day_d) {
+          inp.oninput = function() {
+            save(key, this.value);
+            onDiaryChange(day_d);
+          };
+        })('d_' + d + '_' + f.id, d);
+      }
+
+      cell.appendChild(lbl);
+      cell.appendChild(inp);
+      grid.appendChild(cell);
+    });
+
+    wrap.appendChild(grid);
+    container.appendChild(wrap);
+  });
+}
+
+
+/* ============================================================
+   A3 — WORRY JOURNAL  (sec-worry)
+   ============================================================ */
+var worryCount = 0;
+
+function buildWorry() {
+  worryCount = parseInt(get('worry_count', '3'));
+  document.getElementById('worry-rows').innerHTML = '';
+  for (var i = 0; i < worryCount; i++) addWorryRowEl(i);
+}
+
+function addWorryRow() {
+  worryCount++;
+  save('worry_count', worryCount);
+  addWorryRowEl(worryCount - 1);
+  document.getElementById('worry_' + (worryCount - 1))
+    .scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function addWorryRowEl(i) {
+  var container = document.getElementById('worry-rows');
+  var wrap = document.createElement('div');
+  wrap.className = 'worry-row';
+  wrap.id = 'worry_' + i;
+
+  // Header with date picker
+  var hd = document.createElement('div');
+  hd.className = 'worry-hd';
+  hd.textContent = 'Entry ' + (i + 1) + ' ';
+  var dateInp = document.createElement('input');
+  dateInp.type = 'date';
+  dateInp.className = 'worry-date';
+  dateInp.value = get('w' + i + '_date');
+  (function(idx) { dateInp.oninput = function() { save('w' + idx + '_date', this.value); }; })(i);
+  hd.appendChild(dateInp);
+  wrap.appendChild(hd);
+
+  // Three text fields
+  var fields = document.createElement('div');
+  fields.className = 'worry-fields';
+
+  function worryField(labelText, key, placeholder) {
+    var cell = document.createElement('div');
+    var lbl  = document.createElement('div');
+    lbl.className = 'field-label';
+    lbl.textContent = labelText;
+    var ta = document.createElement('textarea');
+    ta.placeholder = placeholder;
+    ta.value = get(key);
+    ta.oninput = function() { save(key, this.value); };
+    cell.appendChild(lbl);
+    cell.appendChild(ta);
+    return cell;
+  }
+
+  fields.appendChild(worryField('Anxious sleep thought',    'w'+i+'_thought',  "e.g. I'll never function tomorrow if I don't sleep..."));
+  fields.appendChild(worryField('Evidence against it',      'w'+i+'_evidence', 'e.g. Have I actually failed after bad nights before?'));
+  fields.appendChild(worryField('Realistic counter-thought','w'+i+'_counter',  "e.g. I've coped fine on less sleep many times..."));
+
+  wrap.appendChild(fields);
+  container.appendChild(wrap);
+}
+
+
+/* ============================================================
+   A4 — BELIEFS LOG  (sec-beliefs)
+   ============================================================ */
+function buildBeliefs() {
+  var container = document.getElementById('beliefs-rows');
+  container.innerHTML = '';
+  for (var i = 1; i <= 6; i++) {
+    (function(ii) {
+      var wrap = document.createElement('div');
+      wrap.className = 'belief-row';
+
+      var num = document.createElement('div');
+      num.className = 'belief-num';
+      num.textContent = 'Belief ' + ii;
+      wrap.appendChild(num);
+
+      function addField(labelText, key, ph) {
+        var lbl = document.createElement('div');
+        lbl.className = 'field-label';
+        lbl.textContent = labelText;
+        var ta = document.createElement('textarea');
+        ta.placeholder = ph;
+        ta.value = get(key);
+        ta.oninput = function() { save(key, this.value); };
+        wrap.appendChild(lbl);
+        wrap.appendChild(ta);
+      }
+      addField('Belief statement', 'b'+ii+'_belief', "e.g. I need 8 hours or I'll get ill...");
+
+      // Rating row
+      var ratingRow = document.createElement('div');
+      ratingRow.className = 'ratings-row';
+      [['Start','b'+ii+'_start'], ['Week 3','b'+ii+'_wk3'], ['Week 6','b'+ii+'_wk6']].forEach(function(p) {
+        var cell = document.createElement('div');
+        var lbl  = document.createElement('label');
+        lbl.textContent = p[0];
+        var inp  = document.createElement('input');
+        inp.type = 'number'; inp.min = '0'; inp.max = '10'; inp.placeholder = '0-10';
+        inp.value = get(p[1]);
+        inp.oninput = (function(k) { return function() { save(k, this.value); }; })(p[1]);
+        cell.appendChild(lbl); cell.appendChild(inp);
+        ratingRow.appendChild(cell);
+      });
+      wrap.appendChild(ratingRow);
+
+      addField('Revised belief', 'b'+ii+'_revised', 'The more accurate, balanced version...');
+      container.appendChild(wrap);
+    })(i);
+  }
+}
+
+
+/* ============================================================
+   A5 — PERSONAL RULES  (sec-plan)
+   ============================================================ */
+function buildRules() {
+  var container = document.getElementById('rules-rows');
+  container.innerHTML = '';
+  for (var i = 1; i <= 5; i++) {
+    (function(ii) {
+      var row = document.createElement('div');
+      row.className = 'rule-row';
+      var num = document.createElement('div');
+      num.className = 'rule-num';
+      num.textContent = ii;
+      var ta = document.createElement('textarea');
+      ta.placeholder = 'My sleep rule ' + ii + '...';
+      ta.value = get('rule_' + ii);
+      ta.oninput = function() { save('rule_' + ii, this.value); };
+      row.appendChild(num); row.appendChild(ta);
+      container.appendChild(row);
+    })(i);
+  }
+}
+
+
+/* ============================================================
+   A6 — RELAPSE PLAN  (sec-plan)
+   ============================================================ */
+function buildRelapse() {
+  var container = document.getElementById('relapse-fields');
+  container.innerHTML = '';
+  RELAPSE_PROMPTS.forEach(function(p) {
+    var wrap = document.createElement('div');
+    wrap.className = 'relapse-prompt';
+    var q = document.createElement('div');
+    q.className = 'q';
+    q.textContent = p.q;
+    var ta = document.createElement('textarea');
+    ta.placeholder = p.ph;
+    ta.value = get('rel_' + p.id);
+    ta.oninput = (function(pid) { return function() { save('rel_' + pid, this.value); }; })(p.id);
+    wrap.appendChild(q); wrap.appendChild(ta);
+    container.appendChild(wrap);
+  });
+}
+
+
+/* ============================================================
+   A7 — GENERAL NOTES  (sec-plan)
+   ============================================================ */
+function initNotes() {
+  var el = document.getElementById('a7-notes');
+  el.value = get('a7_notes');
+  el.oninput = function() { save('a7_notes', this.value); };
+}
+
+
+/* ============================================================
+   INITIALISE
+   ============================================================ */
+buildChecklist();
+buildEffTracker();
+buildDiary();
+buildWorry();
+buildBeliefs();
+buildRules();
+buildRelapse();
+initNotes();
+updateProgress();
+
+</script>
+</body>
+</html>
